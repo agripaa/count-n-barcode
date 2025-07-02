@@ -7,7 +7,7 @@ module.exports = {
 
     // Ambil identity_id dari IP 1.1.1.1
     const [identity] = await queryInterface.sequelize.query(
-      `SELECT id FROM "Identities" WHERE "IP" = '1.1.1.1' LIMIT 1;`
+      "SELECT id FROM `Identities` WHERE `IP` = '1.1.1.1' LIMIT 1;"
     )
 
     await queryInterface.bulkInsert('Users', [{

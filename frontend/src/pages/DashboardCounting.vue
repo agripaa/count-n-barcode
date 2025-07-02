@@ -141,7 +141,7 @@ async function fetchData() {
   try {
     const token = localStorage.getItem('token')
     const res = await fetch(
-      `${import.meta.env.VITE_BASE_URL_DEV_V1}/counting?page=${currentPage.value}&limit=${perPage}`,
+      `${import.meta.env.VITE_BASE_URL}/counting?page=${currentPage.value}&limit=${perPage}`,
       {
         headers: {
           'Content-Type': 'application/json',
