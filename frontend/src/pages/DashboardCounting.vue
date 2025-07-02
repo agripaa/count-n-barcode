@@ -2,12 +2,12 @@
   <DefaultLayout>
     <div class="grid grid-cols-4 gap-4 mb-6">
       <div class="flex flex-col gap-4 bg-white p-6 rounded-xl shadow">
-        <span class="text-3xl bg-blue-600 text-white rounded-full px-3 py-2 max-w-max shrink-0">
-          <i class="ri-inbox-unarchive-fill"></i>
+        <span class="text-3xl bg-green-500 text-white rounded-full px-3 py-2 max-w-max shrink-0">
+          <i class="ri-bar-chart-box-line"></i>
         </span>
         <div class="flex flex-col gap-1">
-          <p class="text-2xl font-bold">87</p>
-          <p class="text-base text-gray-500">Barang Keluar</p>
+          <p class="text-2xl font-bold">{{ userStats?.total_counting ?? 0 }}</p>
+          <p class="text-base text-gray-500">Total Counting</p>
         </div>
       </div>
       <div class="flex flex-col gap-4 bg-white p-6 rounded-xl shadow">
@@ -15,19 +15,24 @@
           <i class="ri-temp-hot-line"></i>
         </span>
         <div class="flex flex-col gap-1">
-          <p class="text-2xl font-bold">47 °C</p>
+          <p class="text-2xl font-bold">{{ parseFloat(userStats?.Identity?.temp) || 0 }} °C</p>
           <p class="text-base text-gray-500">Suhu</p>
         </div>
       </div>
-      <div class="flex flex-col gap-4 bg-white p-6 rounded-xl shadow">
-        <span class="text-3xl bg-[#02264A] text-white rounded-full px-3 py-2 max-w-max shrink-0">
-          <i class="ri-rss-line"></i>
-        </span>
         <div class="flex flex-col gap-1">
-          <p class="text-2xl font-bold">10.26.101.197</p>
-          <p class="text-base text-gray-500">IP <a href="" class="text-blue-400 hover:text-blue-500 cursor-pointer">Ubah IP? Klik di sini</a></p>
+          <p class="text-2xl font-bold">
+            {{ userStats?.Identity?.IP || 'Belum terhubung' }}
+          </p>
+          <p class="text-base text-gray-500">
+            IP
+            <button
+              @click="showIpModal = true"
+              class="text-yellow-500 hover:text-yellow-600 underline cursor-pointer"
+            >
+              Ubah IP? Klik di sini
+            </button>
+          </p>
         </div>
-      </div>
     </div>
 
     <div class="bg-white p-6 rounded-xl shadow">
@@ -87,6 +92,26 @@
         >
           Next
         </button>
+      </div>
+    </div>
+    <!-- Modal Ubah IP -->
+    <div v-if="showIpModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
+        <h2 class="text-xl font-semibold mb-4">Ubah Alamat IP</h2>
+        <input
+          v-model="newIp"
+          type="text"
+          class="w-full border border-gray-300 rounded px-4 py-2 mb-4"
+          placeholder="Masukkan IP baru"
+        />
+        <div class="flex justify-end gap-2">
+          <button @click="showIpModal = false" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+            Batal
+          </button>
+          <button @click="updateIp" class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+            Simpan
+          </button>
+        </div>
       </div>
     </div>
   </DefaultLayout>
@@ -157,4 +182,61 @@ async function fetchData() {
     console.error('Failed to fetch counting logs:', err)
   }
 }
+
+const userStats = ref(null)
+
+async function fetchUserStats() {
+  try {
+    const token = localStorage.getItem('token')
+    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/users`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    const data = await res.json()
+    userStats.value = data?.[0] || null
+  } catch (err) {
+    console.error('Failed to fetch user stats:', err)
+  }
+}
+
+watchEffect(() => {
+  fetchData()
+  fetchUserStats()
+})
+
+const showIpModal = ref(false)
+const newIp = ref('')
+
+watchEffect(() => {
+  if (userStats.value?.Identity?.IP) {
+    newIp.value = userStats.value.Identity.IP
+  }
+})
+
+async function updateIp() {
+  try {
+    const token = localStorage.getItem('token')
+    const identityId = userStats.value?.identity_id
+
+    if (!identityId) return
+
+    await fetch(`${import.meta.env.VITE_BASE_URL}/identity/${identityId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ IP: newIp.value })
+    })
+
+    showIpModal.value = false
+    await fetchUserStats()
+  } catch (err) {
+    console.error('Gagal mengubah IP:', err)
+  }
+}
+
 </script>

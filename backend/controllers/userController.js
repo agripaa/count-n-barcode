@@ -1,11 +1,32 @@
-const { User, Identity } = require('../models')
+const { User, Identity, Counting, Barcode } = require('../models')
 const bcrypt = require('bcrypt')
 
 module.exports = {
-  // GET all users
   async getAll(req, res) {
     try {
-      const users = await User.findAll({ include: Identity })
+      const users = await User.findAll({
+        include: {
+          model: Identity,
+          attributes: ['IP', 'temp'], // 👈 ambil suhu di sini
+        },
+        attributes: {
+          include: [
+            [
+              sequelize.literal(`(
+                SELECT COUNT(*) FROM Countings AS c WHERE c.identity_id = User.identity_id
+              )`),
+              'total_counting'
+            ],
+            [
+              sequelize.literal(`(
+                SELECT COUNT(*) FROM Barcodes AS b WHERE b.identity_id = User.identity_id
+              )`),
+              'total_barcode'
+            ]
+          ]
+        }
+      })
+
       res.json(users)
     } catch (err) {
       res.status(500).json({ error: err.message })
