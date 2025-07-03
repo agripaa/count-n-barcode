@@ -85,7 +85,7 @@ function handleAvatarUpload(e) {
 // Ambil profile saat component di-mount
 onMounted(async () => {
   try {
-    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/profile`, {
+    const res = await fetch(`${import.meta.env.VITE_BASE_URL_DEV_V1}/auth/profile`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -110,7 +110,7 @@ async function saveProfile() {
       payload.newPassword = newPassword.value
     }
 
-    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/users`, {
+    const res = await fetch(`${import.meta.env.VITE_BASE_URL_DEV_V1}/users`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

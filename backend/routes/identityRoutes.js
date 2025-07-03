@@ -9,6 +9,7 @@ router.post('/', controller.create)
 // 🔐 Lainnya pakai auth
 router.get('/', authMiddleware, controller.getAll)
 router.get('/:id', authMiddleware, controller.getById)
+router.post('/set-ip', authMiddleware, controller.setIpByUser)
 router.put('/:id', authMiddleware, controller.update)
 router.delete('/:id', authMiddleware, controller.delete)
 

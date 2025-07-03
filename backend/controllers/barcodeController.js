@@ -26,6 +26,54 @@ module.exports = {
     }
     },
 
+  async receiveBarcode(req, res) {
+    try {
+      const { kode_barang, ip_ethernet, temperature } = req.body
+
+      // 1. Validasi data wajib
+      if (!kode_barang || !ip_ethernet) {
+        return res.status(400).json({ message: 'Kode barang dan IP wajib dikirim' })
+      }
+
+      // 2. Cari identity berdasarkan IP dan type: 'barcode'
+      const identity = await Identity.findOne({
+        where: { IP: ip_ethernet, type: 'barcode' }
+      })
+
+      if (!identity) {
+        return res.status(403).json({
+          message: 'IP tidak dikenali atau bukan untuk device barcode'
+        })
+      }
+
+      // 3. Update suhu jika tersedia
+      if (temperature) {
+        identity.temp = temperature
+        await identity.save()
+      }
+
+      // 4. Simpan data barcode
+      const now = new Date()
+      const predicted_date = now
+      const predicted_time = now.toTimeString().split(' ')[0]
+
+      const barcode = await Barcode.create({
+        code: kode_barang,
+        predicted_date,
+        predicted_time,
+        identity_id: identity.id
+      })
+
+      res.status(201).json({
+        message: 'Data barcode diterima ✅',
+        data: barcode
+      })
+    } catch (err) {
+      console.error(err)
+      res.status(500).json({ error: err.message })
+    }
+  },
+
 
   // GET barcode by ID
   async getById(req, res) {

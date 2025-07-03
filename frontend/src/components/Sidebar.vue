@@ -12,7 +12,7 @@ onMounted(async () => {
   if (!token) return
 
   try {
-    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/profile`, {
+    const res = await fetch(`${import.meta.env.VITE_BASE_URL_DEV_V1}/auth/profile`, {
       headers: {
         Authorization: `Bearer ${token}`
       }

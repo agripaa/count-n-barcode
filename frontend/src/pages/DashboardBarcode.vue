@@ -6,16 +6,17 @@
           <i class="ri-inbox-unarchive-fill"></i>
         </span>
         <div class="flex flex-col gap-1">
-          <p class="text-2xl font-bold">87</p>
+          <p class="text-2xl font-bold">{{ user?.total_barcode ?? 0 }}</p>
           <p class="text-base text-gray-500">Barang Keluar</p>
         </div>
       </div>
+      <!-- Suhu -->
       <div class="flex flex-col gap-4 bg-white p-6 rounded-xl shadow">
         <span class="text-3xl bg-yellow-400 text-black rounded-full px-3 py-2 max-w-max shrink-0">
           <i class="ri-temp-hot-line"></i>
         </span>
         <div class="flex flex-col gap-1">
-          <p class="text-2xl font-bold">47 °C</p>
+          <p class="text-2xl font-bold">{{ parseFloat(user?.Identity?.temp) || 0 }} °C</p>
           <p class="text-base text-gray-500">Suhu</p>
         </div>
       </div>
@@ -116,7 +117,10 @@ const paginationPages = computed(() => {
   return pages
 })
 
-watchEffect(fetchData)
+watchEffect(() => {
+  fetchData()
+  fetchUser()
+})
 
 function formatDate(dateStr) {
   const date = new Date(dateStr)
@@ -131,7 +135,7 @@ async function fetchData() {
   try {
     const token = localStorage.getItem('token')
     const res = await fetch(
-      `${import.meta.env.VITE_BASE_URL}/barcode?page=${currentPage.value}&limit=${perPage}`,
+      `${import.meta.env.VITE_BASE_URL_DEV_V1}/barcode?page=${currentPage.value}&limit=${perPage}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -154,4 +158,22 @@ async function fetchData() {
   }
 }
 
+const user = ref(null)
+
+async function fetchUser() {
+  try {
+    const token = localStorage.getItem('token')
+    const res = await fetch(`${import.meta.env.VITE_BASE_URL_DEV_V1}/user`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    const data = await res.json()
+    user.value = data?.[0] || null
+  } catch (err) {
+    console.error('Failed to fetch user info:', err)
+  }
+}
 </script>

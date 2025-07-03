@@ -2,12 +2,12 @@
   <DefaultLayout>
     <div class="grid grid-cols-4 gap-4 mb-6">
       <div class="flex flex-col gap-4 bg-white p-6 rounded-xl shadow">
-        <span class="text-3xl bg-green-500 text-white rounded-full px-3 py-2 max-w-max shrink-0">
-          <i class="ri-bar-chart-box-line"></i>
+        <span class="text-3xl bg-blue-600 text-white rounded-full px-3 py-2 max-w-max shrink-0">
+          <i class="ri-inbox-unarchive-fill"></i>
         </span>
         <div class="flex flex-col gap-1">
           <p class="text-2xl font-bold">{{ userStats?.total_counting ?? 0 }}</p>
-          <p class="text-base text-gray-500">Total Counting</p>
+          <p class="text-base text-gray-500">Barang Keluar</p>
         </div>
       </div>
       <div class="flex flex-col gap-4 bg-white p-6 rounded-xl shadow">
@@ -19,20 +19,25 @@
           <p class="text-base text-gray-500">Suhu</p>
         </div>
       </div>
+      <div class="flex flex-col gap-4 bg-white p-6 rounded-xl shadow">
+        <span class="text-3xl bg-[#02264A] text-white rounded-full px-3 py-2 max-w-max shrink-0">
+          <i class="ri-rss-line"></i>
+        </span>
         <div class="flex flex-col gap-1">
           <p class="text-2xl font-bold">
             {{ userStats?.Identity?.IP || 'Belum terhubung' }}
           </p>
-          <p class="text-base text-gray-500">
-            IP
-            <button
-              @click="showIpModal = true"
-              class="text-yellow-500 hover:text-yellow-600 underline cursor-pointer"
-            >
-              Ubah IP? Klik di sini
-            </button>
-          </p>
+            <p class="text-base text-gray-500 flex items-start gap-2 p-0 m-0">
+              IP
+              <button
+                @click="showIpModal = true"
+                class="text-blue-400 hover:text-blue-500 hover:underline cursor-pointer"
+              >
+                Ubah IP? Klik di sini
+              </button>
+            </p>
         </div>
+      </div>
     </div>
 
     <div class="bg-white p-6 rounded-xl shadow">
@@ -95,7 +100,10 @@
       </div>
     </div>
     <!-- Modal Ubah IP -->
-    <div v-if="showIpModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div
+      v-if="showIpModal"
+      class="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50"
+    >
       <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
         <h2 class="text-xl font-semibold mb-4">Ubah Alamat IP</h2>
         <input
@@ -166,7 +174,7 @@ async function fetchData() {
   try {
     const token = localStorage.getItem('token')
     const res = await fetch(
-      `${import.meta.env.VITE_BASE_URL}/counting?page=${currentPage.value}&limit=${perPage}`,
+      `${import.meta.env.VITE_BASE_URL_DEV_V1}/counting?page=${currentPage.value}&limit=${perPage}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -188,7 +196,7 @@ const userStats = ref(null)
 async function fetchUserStats() {
   try {
     const token = localStorage.getItem('token')
-    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/users`, {
+    const res = await fetch(`${import.meta.env.VITE_BASE_URL_DEV_V1}/user`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
@@ -219,17 +227,18 @@ watchEffect(() => {
 async function updateIp() {
   try {
     const token = localStorage.getItem('token')
-    const identityId = userStats.value?.identity_id
+    if (!newIp.value) return
 
-    if (!identityId) return
-
-    await fetch(`${import.meta.env.VITE_BASE_URL}/identity/${identityId}`, {
-      method: 'PUT',
+    await fetch(`${import.meta.env.VITE_BASE_URL_DEV_V1}/identity/set-ip`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({ IP: newIp.value })
+      body: JSON.stringify({
+        IP: newIp.value,
+        temp: userStats.value?.Identity?.temp || '0'
+      })
     })
 
     showIpModal.value = false
@@ -238,5 +247,4 @@ async function updateIp() {
     console.error('Gagal mengubah IP:', err)
   }
 }
-
 </script>

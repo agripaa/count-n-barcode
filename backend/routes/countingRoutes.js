@@ -5,6 +5,7 @@ const authMiddleware = require('../middlewares/authMiddleware')
 
 // 🔓 Public create
 router.post('/', controller.create)
+router.post('/device', controller.receiveCounting)
 
 // 🔐 Protected routes
 router.get('/', authMiddleware, controller.getAll)

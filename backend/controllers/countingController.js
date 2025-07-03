@@ -1,4 +1,4 @@
-const { Counting, Identity } = require('../models')
+const { Identity, Counting } = require('../models');
 
 module.exports = {
   // GET all
@@ -24,8 +24,55 @@ module.exports = {
     } catch (err) {
         res.status(500).json({ error: err.message })
     }
-    },
+  },
 
+  async receiveCounting(req, res) {
+    try {
+      const { count, ip, temp } = req.body
+
+      // 1. Validasi input
+      if (!count || !ip) {
+        return res.status(400).json({ message: 'Count dan IP wajib dikirim' })
+      }
+
+      // 2. Cari identity dengan IP dan type 'counting'
+      const identity = await Identity.findOne({
+        where: { IP: ip, type: 'counting' }
+      })
+
+      if (!identity) {
+        return res.status(403).json({
+          message: 'IP tidak dikenali atau bukan untuk device counting'
+        })
+      }
+
+      // 3. Update suhu jika dikirim
+      if (temp) {
+        identity.temp = temp
+        await identity.save()
+      }
+
+      // 4. Simpan data counting
+      const now = new Date()
+      const predicted_date = now
+      const predicted_time = now.toTimeString().split(' ')[0]
+
+      const counting = await Counting.create({
+        count,
+        predicted_date,
+        predicted_time,
+        identity_id: identity.id
+      })
+
+      res.status(201).json({
+        message: 'Data counting diterima ✅',
+        data: counting
+      })
+    } catch (err) {
+      console.error(err)
+      res.status(500).json({ error: err.message })
+    }
+  },
 
   // GET by ID
   async getById(req, res) {

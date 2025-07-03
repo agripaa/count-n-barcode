@@ -1,4 +1,4 @@
-const { User, Identity, Counting, Barcode } = require('../models')
+const { User, Identity, Counting, Barcode, sequelize } = require('../models')
 const bcrypt = require('bcrypt')
 
 module.exports = {

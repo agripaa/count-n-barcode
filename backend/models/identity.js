@@ -10,7 +10,8 @@ module.exports = (sequelize, DataTypes) => {
   }
   Identity.init({
     IP: DataTypes.STRING,
-    temp: DataTypes.STRING
+    temp: DataTypes.STRING,
+    type: DataTypes.ENUM('counting', 'barcode')
   }, {
     sequelize,
     modelName: 'Identity',
